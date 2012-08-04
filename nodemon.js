@@ -453,6 +453,7 @@ function getNodemonArgs() {
         js: false, // becomes the default anyway...
         includeHidden: false,
         exitcrash: false,
+        watchAll: false,
         forceLegacyWatch: false, // forces nodemon to use the slowest but most compatible method for watching for file changes
         stdin: true
         // args: []
@@ -473,7 +474,9 @@ function getNodemonArgs() {
       options.includeHidden = true;
     } else if (arg === '--watch' || arg === '-w') {
       options.watch.push(args.shift());
-    } else if (arg === '--exitcrash') {
+    } else if (arg === '--all' || arg === '-a') {
+      options.watchAll = true;
+    }else if (arg === '--exitcrash') {
       options.exitcrash = true;
     } else if (arg === '--delay' || arg === '-d') {
       options.delay = parseInt(args.shift());
@@ -654,6 +657,7 @@ if (program.options.js) {
   addIgnoreRule('^((?!\.js|\.coffee$).)*$', true); // ignores everything except JS
 }
 
+
 if (program.options.watch && program.options.watch.length > 0) {
   program.options.watch.forEach(function (dir) {
     dirs.push(path.resolve(dir));
@@ -687,11 +691,15 @@ exists(ignoreFilePath, function (exist) {
       } else {
         // don't create the ignorefile, just ignore the flag & JS
         // addIgnoreRule(flag);
-        var ext = program.ext.replace(/\./g, '\\.');
-        if (ext) {
-          addIgnoreRule('^((?!' + ext + '$).)*$', true);
-        } else {
-          addIgnoreRule('^((?!\.js|\.coffee$).)*$', true); // ignores everything except JS
+        if(program.options.watchAll){
+          addIgnoreRule('^((?!\..$).)*$', true); // ignores everything except JS
+        }else{
+          var ext = program.ext.replace(/\./g, '\\.');
+          if (ext) {
+            addIgnoreRule('^((?!' + ext + '$).)*$', true);
+          } else {
+            addIgnoreRule('^((?!\.js|\.coffee$).)*$', true); // ignores everything except JS
+          }
         }
       }
     });
