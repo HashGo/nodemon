@@ -448,6 +448,7 @@ function getNodemonArgs() {
       options = {
         delay: 1,
         watch: [],
+        ext: "js,coffee",
         exec: 'node',
         verbose: true,
         js: false, // becomes the default anyway...
@@ -476,6 +477,8 @@ function getNodemonArgs() {
       options.watch.push(args.shift());
     } else if (arg === '--all' || arg === '-a') {
       options.watchAll = true;
+    } else if (arg === '--ext' || arg === '-t') {
+      options.ext = args.shift();
     }else if (arg === '--exitcrash') {
       options.exitcrash = true;
     } else if (arg === '--delay' || arg === '-d') {
@@ -583,6 +586,7 @@ function help() {
     '  -w, --watch dir    watch directory "dir". use once for each',
     '                     directory to watch',
     '  -a, --all          watch all files in the watch directory',
+    '  -t, --ext          comma seperated file extensions to watch',
     '  -x, --exec app     execute script with "app", ie. -x "python -v"',
     '  -I, --no-stdin     don\'t try to read from stdin',
     '  -q, --quiet        minimise nodemon messages to start/stop only',
@@ -694,6 +698,12 @@ exists(ignoreFilePath, function (exist) {
         // addIgnoreRule(flag);
         if(program.options.watchAll){
           addIgnoreRule('^((?!\..$).)*$', true); // ignores everything except JS
+        }
+        else if(program.options.ext){
+          var mon = program.options.ext.split(',').map(function(ext){
+            return '\.' + ext;
+          }).join('|');
+          addIgnoreRule('^((?!' + mon + '$).)*$', true);
         }else{
           var ext = program.ext.replace(/\./g, '\\.');
           if (ext) {
